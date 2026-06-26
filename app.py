@@ -29,7 +29,14 @@ def _database_uri() -> str:
     return uri
 
 
-app = Flask(__name__)
+# app = Flask(__name__)
+import tempfile
+
+app = Flask(
+    __name__,
+    instance_path=tempfile.gettempdir(),
+    instance_relative_config=False,
+)
 app.config.update(
     SECRET_KEY=os.getenv("SECRET_KEY", "change-me"),
     SQLALCHEMY_DATABASE_URI=_database_uri(),
@@ -40,7 +47,8 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 db = SQLAlchemy(app)
 
-os.makedirs(app.config["PROFILE_PIC_FOLDER"], exist_ok=True)
+if not os.getenv("VERCEL"):
+    os.makedirs(app.config["PROFILE_PIC_FOLDER"], exist_ok=True)
 
 
 DEFAULT_PROFILE = {
