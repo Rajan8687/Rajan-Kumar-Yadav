@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Blog | {{ profile.name }}{% endblock %}
+{% block meta_description %}Read the blog and article updates from {{ profile.name }}.{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex items-center justify-between">
+  <h1 class="text-3xl font-semibold text-slate-950 dark:text-white">Articles and updates</h1>
+  {% if current_user %}
+    <a class="btn-primary" href="{{ url_for('dashboard') }}">Write blog</a>
+  {% else %}
+    <a class="btn-primary" href="{{ url_for('login') }}">Login to write</a>
+  {% endif %}
+</div>
+
+<section class="mt-8 grid gap-4">
+  {% for article in articles %}
+    <article class="section-card group">
+      <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+        <span>{{ article.category }}</span>
+        <span class="text-slate-400">•</span>
+        <span>{{ article.created_at.strftime("%b %d, %Y") }}</span>
+        <span class="text-slate-400">•</span>
+        <span>{{ article.content | reading_time }} min read</span>
+      </div>
+      <a href="{{ url_for('article', slug=article.slug) }}" class="post-title mt-3 block text-2xl font-semibold text-slate-950 transition group-hover:text-amber-700 dark:text-white dark:group-hover:text-amber-300">
+        {{ article.title }}
+      </a>
+      <p class="post-copy mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-400">{{ article.excerpt }}</p>
+      <div class="mt-4">
+        <a class="inline-flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-300" href="{{ url_for('article', slug=article.slug) }}">
+          Read article <i data-lucide="arrow-right" class="h-4 w-4"></i>
+        </a>
+      </div>
+    </article>
+  {% else %}
+    <div class="section-card text-sm text-slate-600 dark:text-slate-400">
+      No published articles yet.
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

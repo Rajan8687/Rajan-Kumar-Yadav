@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}About | {{ profile.name }}{% endblock %}
+{% block meta_description %}About {{ profile.name }}, a Data Science graduate from CMR University, Bangalore.{% endblock %}
+
+{% block content %}
+<section class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+  <div class="section-card">
+    <img
+      src="{{ url_for('static', filename='img/logo.jpg') }}"
+      alt="{{ profile.name }}"
+      class="aspect-[4/5] w-full rounded-[1.5rem] object-cover shadow-lg"
+    />
+  </div>
+  <div class="space-y-6">
+    <div class="section-panel">
+      <div class="section-heading">About me</div>
+      <h1 class="page-title mt-3 text-3xl font-semibold text-slate-950 dark:text-white">{{ profile.name }}</h1>
+      <p class="page-copy mt-4 max-w-3xl text-sm leading-8 text-slate-600 dark:text-slate-400">
+        I am a Data Science graduate from {{ profile.university }}. I like practical machine learning, clear dashboards,
+        and building websites that feel professional without becoming heavy.
+      </p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="section-card">
+        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">Education</div>
+        <div class="card-title mt-2 text-base font-medium text-slate-900 dark:text-slate-100">{{ profile.university }}</div>
+        <div class="card-copy mt-1 text-sm text-slate-600 dark:text-slate-400">Data Science graduate</div>
+      </div>
+      <div class="section-card">
+        <div class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">Location</div>
+        <div class="card-title mt-2 text-base font-medium text-slate-900 dark:text-slate-100">{{ profile.location }}</div>
+        <div class="card-copy mt-1 text-sm text-slate-600 dark:text-slate-400">Open to analytics and data roles</div>
+      </div>
+    </div>
+
+    <div class="section-panel">
+      <div class="section-heading">What I focus on</div>
+      <div class="mt-4 grid gap-4 sm:grid-cols-3">
+        {% for item in focus_areas %}
+          <div class="rounded-[1.5rem] border border-white/40 bg-white/80 p-4 dark:border-white/10 dark:bg-slate-950/70">
+            <h2 class="card-title text-base font-semibold text-slate-950 dark:text-white">{{ item.title }}</h2>
+            <p class="card-copy mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">{{ item.detail }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mt-12 grid gap-8 lg:grid-cols-[1fr_1fr]">
+  <div class="section-panel">
+    <div class="section-heading">Tools I use</div>
+    <div class="mt-4 flex flex-wrap gap-3">
+      {% for skill in skills %}
+        <span class="pill">{{ skill }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="section-panel">
+    <div class="section-heading">Contact</div>
+    <div class="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-400">
+      <div class="flex items-center gap-2">
+        <i data-lucide="mail" class="h-4 w-4 text-amber-700 dark:text-amber-300"></i>
+        <a href="mailto:{{ profile.email }}" class="hover:text-amber-700 dark:hover:text-amber-300">{{ profile.email }}</a>
+      </div>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a class="btn-secondary" href="{{ profile.live_project }}" target="_blank" rel="noreferrer">Live project</a>
+        <a class="btn-secondary" href="{{ profile.github }}" target="_blank" rel="noreferrer">GitHub repo</a>
+        <a class="btn-secondary" href="{{ profile.linkedin }}" target="_blank" rel="noreferrer">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

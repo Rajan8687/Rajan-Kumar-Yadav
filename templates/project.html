@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} | {{ profile.name }}{% endblock %}
+{% block meta_description %}{{ project.excerpt }}{% endblock %}
+
+{% block content %}
+<article class="mx-auto max-w-4xl">
+  <div class="section-panel">
+    <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+      <span>{{ project.category }}</span>
+      <span class="text-slate-400">•</span>
+      <span>{{ project.created_at.strftime("%b %d, %Y") }}</span>
+      <span class="text-slate-400">•</span>
+      <span>{{ project.content | reading_time }} min read</span>
+    </div>
+    <h1 class="post-title mt-4 text-4xl font-semibold text-slate-950 dark:text-white">{{ project.title }}</h1>
+    <p class="post-copy mt-4 max-w-3xl text-sm leading-8 text-slate-600 dark:text-slate-400">{{ project.excerpt }}</p>
+    <div class="mt-5 flex flex-wrap gap-3">
+      <a class="btn-primary" href="{{ profile.live_project }}" target="_blank" rel="noreferrer">Open live project</a>
+      <a class="btn-secondary" href="{{ profile.github }}" target="_blank" rel="noreferrer">GitHub repo</a>
+    </div>
+  </div>
+
+  <div class="mt-6 section-panel">
+    <div class="rich-text">
+      {{ project.content | safe }}
+    </div>
+  </div>
+</article>
+{% endblock %}

@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | {{ profile.name }}{% endblock %}
+{% block meta_description %}Manage profile details and blog articles for {{ profile.name }}.{% endblock %}
+
+{% block content %}
+{% macro editor_toolbar() %}
+<div class="editor-toolbar mb-3 flex flex-wrap items-center gap-1 rounded-2xl border border-slate-300 bg-white p-1 text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('bold')" title="Bold"><i data-lucide="bold" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('italic')" title="Italic"><i data-lucide="italic" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('underline')" title="Underline"><i data-lucide="underline" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('justifyLeft')" title="Align left"><i data-lucide="align-left" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('justifyCenter')" title="Center"><i data-lucide="align-center" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('justifyRight')" title="Align right"><i data-lucide="align-right" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('justifyFull')" title="Justify"><i data-lucide="align-justify" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="triggerImageUpload()" title="Upload image"><i data-lucide="image" class="h-4 w-4"></i></button>
+  <button type="button" class="editor-button rounded-2xl" onclick="execCommand('removeFormat')" title="Clear formatting"><i data-lucide="eraser" class="h-4 w-4"></i></button>
+  <select class="editor-select size-select" onchange="applyFontSize(this.value)" title="Font size">
+    <option value="">Size</option>
+    <option value="1">Small</option>
+    <option value="3">Normal</option>
+    <option value="5">Large</option>
+    <option value="7">XL</option>
+  </select>
+  <input id="editor-image-upload" type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
+</div>
+{% endmacro %}
+<section class="grid gap-8">
+  <section class="section-panel">
+    <div class="section-heading">{% if article_to_edit %}Edit article{% else %}My blog posts{% endif %}</div>
+    {% if article_to_edit %}
+      <form
+        method="post"
+        action="{{ url_for('edit_article', article_id=article_to_edit.id) }}"
+        class="mt-4 space-y-4"
+        onsubmit="return syncEditorContent('edit-editor-content', 'content')"
+      >
+        <div class="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/80 p-5 shadow-lg shadow-amber-200/10 dark:border-amber-300/20 dark:bg-slate-950/80">
+          {{ editor_toolbar() }}
+          <div id="edit-editor-content" contenteditable="true" class="editor-content min-h-[320px] rounded-[1.5rem] border border-slate-300 bg-white p-5 text-base leading-7 text-slate-900 outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" data-placeholder="Start with a title...">{{ article_to_edit.content | safe }}</div>
+          <textarea id="content" name="content" class="hidden">{{ article_to_edit.content }}</textarea>
+        </div>
+        <label class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+          <input name="published" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500" {% if article_to_edit.published %}checked{% endif %} />
+          Publish article
+        </label>
+        <div class="flex flex-wrap gap-3">
+          <button type="submit" class="btn-primary">Update article</button>
+          <a href="{{ url_for('dashboard') }}" class="btn-secondary">Cancel edit</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="py-10 text-center">
+        <p class="text-sm text-slate-600 dark:text-slate-400">Only your articles appear here. Click below to write a new blog post.</p>
+        <button id="open-write-article" class="btn-primary mt-4">Write blog</button>
+      </div>
+      <div id="write-article-panel" class="hidden mt-6">
+        <form
+          method="post"
+          action="{{ url_for('create_article') }}"
+          class="space-y-4"
+          onsubmit="return syncEditorContent('create-editor-content', 'content')"
+        >
+          <div class="rounded-[1.5rem] border border-amber-200/80 bg-amber-50/80 p-5 shadow-lg shadow-amber-200/10 dark:border-amber-300/20 dark:bg-slate-950/80">
+            {{ editor_toolbar() }}
+            <div id="create-editor-content" contenteditable="true" class="editor-content min-h-[320px] rounded-[1.5rem] border border-slate-300 bg-white p-5 text-base leading-7 text-slate-900 outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" data-placeholder="Start with a title..."></div>
+            <textarea id="content" name="content" class="hidden"></textarea>
+          </div>
+          <label class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <input name="published" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500" checked />
+            Publish article
+          </label>
+          <div class="flex flex-wrap gap-3">
+            <button type="submit" class="btn-primary">Create article</button>
+            <button id="cancel-write-article" type="button" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="section-panel">
+    <div class="section-heading">Articles</div>
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      {% for article in articles %}
+        <article class="rounded-[1.5rem] border border-white/50 bg-white/80 p-5 dark:border-white/10 dark:bg-slate-950/70">
+          <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+            <span>{{ article.category }}</span>
+            <span class="text-slate-400">•</span>
+            <span>{{ article.created_at.strftime("%b %d, %Y") }}</span>
+            <span class="text-slate-400">•</span>
+            <span>{% if article.published %}Published{% else %}Draft{% endif %}</span>
+          </div>
+          <h2 class="card-title mt-3 text-xl font-semibold text-slate-950 dark:text-white">{{ article.title }}</h2>
+          <p class="card-copy mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">{{ article.excerpt }}</p>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a class="btn-secondary" href="{{ url_for('article', slug=article.slug) }}">View</a>
+            <a class="btn-secondary" href="{{ url_for('edit_article', article_id=article.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('delete_article', article_id=article.id) }}">
+              <button type="submit" class="btn-secondary">Delete</button>
+            </form>
+          </div>
+        </article>
+      {% else %}
+        <div class="rounded-[1.5rem] border border-dashed border-white/50 bg-white/50 p-5 text-sm text-slate-600 dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-400">
+          No articles yet. Create your first one above.
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</section>
+
+<style>
+  .editor-button {
+    min-width: 3rem;
+    min-height: 3rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .editor-button i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .editor-button:hover {
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  .editor-button:focus-visible {
+    outline: 2px solid rgba(251, 191, 36, 0.65);
+    outline-offset: 2px;
+  }
+
+  .editor-toolbar select {
+    min-width: 5.5rem;
+    min-height: 2.5rem;
+    padding: 0.75rem 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .editor-select {
+    min-width: 6rem;
+    border-radius: 1rem;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #0f172a;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .editor-select:hover,
+  .editor-select:focus-visible {
+    border-color: rgba(251, 191, 36, 0.8);
+    outline: none;
+  }
+
+  .editor-select:focus-visible {
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+  }
+
+  .editor-select.size-select {
+    border: none;
+    color: #ffffff;
+    background: linear-gradient(135deg, #facc15 0%, #38bdf8 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  }
+
+  .editor-select.size-select option {
+    color: #0f172a;
+  }
+
+  .editor-placeholder-title {
+    color: #94a3b8;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .placeholder-active .editor-placeholder-title {
+    color: #94a3b8;
+  }
+</style>
+
+<script>
+  let currentEditor = null;
+  let savedEditorRange = null;
+
+  function saveEditorSelection() {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount || !currentEditor) return;
+    const range = selection.getRangeAt(0);
+    if (!range) return;
+    if (currentEditor.contains(range.commonAncestorContainer)) {
+      savedEditorRange = range.cloneRange();
+    }
+  }
+
+  function restoreEditorSelection() {
+    const selection = window.getSelection();
+    if (!selection || !savedEditorRange) return;
+    selection.removeAllRanges();
+    selection.addRange(savedEditorRange);
+    if (currentEditor) {
+      currentEditor.focus({ preventScroll: true });
+    }
+  }
+
+  function execCommand(command, value = null) {
+    restoreEditorSelection();
+    document.execCommand(command, false, value);
+    if (currentEditor) {
+      currentEditor.focus({ preventScroll: true });
+    }
+  }
+
+  function triggerImageUpload() {
+    const input = document.getElementById('editor-image-upload');
+    if (!input) return;
+    input.value = '';
+    input.click();
+  }
+
+  function handleImageUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file || !currentEditor) return;
+
+    const reader = new FileReader();
+    reader.onload = function () {
+      restoreEditorSelection();
+      document.execCommand('insertImage', false, reader.result);
+      if (currentEditor) {
+        currentEditor.focus({ preventScroll: true });
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function applyHeading(value) {
+    restoreEditorSelection();
+    if (!value) {
+      execCommand('formatBlock', '<p>');
+      return;
+    }
+    execCommand('formatBlock', `<${value.toLowerCase()}>`);
+  }
+
+  function applyFontSize(value) {
+    restoreEditorSelection();
+    if (!value) {
+      execCommand('removeFormat');
+      return;
+    }
+    execCommand('fontSize', value);
+  }
+
+  function setEditorPlaceholder(editor) {
+    if (!editor) return;
+    const content = editor.textContent.trim();
+    if (!content || content === '<br>') {
+      editor.innerHTML = `<h1 class="editor-placeholder-title">${editor.dataset.placeholder}</h1>`;
+      editor.classList.add('placeholder-active');
+    }
+  }
+
+  function clearEditorPlaceholder(editor) {
+    if (!editor) return;
+    if (editor.classList.contains('placeholder-active')) {
+      editor.innerHTML = '';
+      editor.classList.remove('placeholder-active');
+    }
+  }
+
+  function syncEditorContent(editorId, textareaId) {
+    const editor = document.getElementById(editorId);
+    const textarea = document.getElementById(textareaId);
+    if (!editor || !textarea) {
+      return true;
+    }
+
+    if (editor.classList.contains('placeholder-active')) {
+      textarea.value = '';
+      return true;
+    }
+
+    const html = editor.innerHTML.trim();
+    textarea.value = (!html || html === '<br>') ? '' : html;
+    return true;
+  }
+
+  function setupEditor(editorId) {
+    const editor = document.getElementById(editorId);
+    if (!editor) return;
+
+    setEditorPlaceholder(editor);
+
+    editor.addEventListener('focus', function () {
+      currentEditor = editor;
+      clearEditorPlaceholder(editor);
+    });
+
+    editor.addEventListener('blur', function () {
+      if (!editor.textContent.trim()) {
+        setEditorPlaceholder(editor);
+      }
+    });
+
+    editor.addEventListener('keyup', saveEditorSelection);
+    editor.addEventListener('mouseup', saveEditorSelection);
+    editor.addEventListener('touchend', saveEditorSelection);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    setupEditor('create-editor-content');
+    setupEditor('edit-editor-content');
+
+    document.addEventListener('mousedown', function (event) {
+      if (!currentEditor) return;
+      const toolbarButton = event.target.closest('.editor-button');
+      const toolbarSelect = event.target.closest('.editor-select');
+      if (!toolbarButton && !toolbarSelect) return;
+
+      saveEditorSelection();
+      if (toolbarButton) {
+        event.preventDefault();
+      }
+    }, true);
+
+    document.addEventListener('selectionchange', function () {
+      if (!currentEditor) return;
+      saveEditorSelection();
+    });
+
+    const openButton = document.getElementById('open-write-article');
+    const cancelButton = document.getElementById('cancel-write-article');
+    const panel = document.getElementById('write-article-panel');
+
+    if (openButton && panel) {
+      openButton.addEventListener('click', function () {
+        panel.classList.remove('hidden');
+        openButton.closest('.section-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    if (cancelButton && panel) {
+      cancelButton.addEventListener('click', function () {
+        panel.classList.add('hidden');
+      });
+    }
+  });
+</script>
+{% endblock %}

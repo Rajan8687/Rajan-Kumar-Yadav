@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Login | {{ profile.name }}{% endblock %}
+{% block meta_description %}Login or create an account to manage profile details and blog articles for {{ profile.name }}.{% endblock %}
+
+{% block content %}
+<section class="grid gap-8 lg:grid-cols-[1fr_1fr]">
+  <div class="section-panel">
+    <div class="section-heading">Protected area</div>
+    <h1 class="page-title mt-3 text-3xl font-semibold text-slate-950 dark:text-white">Login</h1>
+    <p class="page-copy mt-4 text-sm leading-8 text-slate-600 dark:text-slate-400">
+      Use this area to log in or create an account for your protected dashboard. The public pages stay focused on the Capstone Project.
+    </p>
+    <div class="mt-5 flex flex-wrap gap-3">
+      <a class="btn-secondary" href="{{ url_for('blog') }}">View blog</a>
+      <a class="btn-secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
+    </div>
+  </div>
+
+  <div class="grid gap-8">
+    <form method="post" action="{{ url_for('login') }}" class="section-panel space-y-4">
+      <div class="section-heading">Login</div>
+      <div>
+        <label class="form-label" for="identifier">Username or email</label>
+        <input id="identifier" name="identifier" class="form-input" placeholder="Enter username or email" />
+      </div>
+      <div>
+        <label class="form-label" for="password">Password</label>
+        <input id="password" name="password" type="password" class="form-input" placeholder="Enter password" />
+      </div>
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
+
+    <form method="post" action="{{ url_for('register') }}" enctype="multipart/form-data" class="section-panel space-y-4">
+      <div class="section-heading">Register</div>
+      <div>
+        <label class="form-label" for="username">Username</label>
+        <input id="username" name="username" class="form-input" placeholder="Choose a username" />
+      </div>
+      <div>
+        <label class="form-label" for="email">Email</label>
+        <input id="email" name="email" type="email" class="form-input" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label class="form-label" for="profile_picture">Profile picture</label>
+        <input id="profile_picture" name="profile_picture" type="file" accept="image/*" class="form-input" />
+      </div>
+      <div>
+        <label class="form-label" for="reg_password">Password</label>
+        <input id="reg_password" name="password" type="password" class="form-input" placeholder="Create a password" />
+      </div>
+      <div>
+        <label class="form-label" for="confirm_password">Confirm password</label>
+        <input id="confirm_password" name="confirm_password" type="password" class="form-input" placeholder="Repeat password" />
+      </div>
+      <button type="submit" class="btn-primary">Create account</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

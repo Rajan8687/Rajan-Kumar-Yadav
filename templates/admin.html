@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Admin | {{ profile.name }}{% endblock %}
+{% block meta_description %}Create and manage projects for {{ profile.name }}.{% endblock %}
+
+{% block content %}
+<section class="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
+  <form method="post" class="section-panel space-y-4">
+    <div class="section-heading">Create project</div>
+    <div>
+      <label class="form-label" for="password">Admin password</label>
+      <input id="password" name="password" type="password" class="form-input" />
+    </div>
+    <div>
+      <label class="form-label" for="title">Title</label>
+      <input id="title" name="title" class="form-input" placeholder="Post title" />
+    </div>
+    <div>
+      <label class="form-label" for="slug">Slug</label>
+      <input id="slug" name="slug" class="form-input" placeholder="leave blank to auto-generate" />
+    </div>
+    <div>
+      <label class="form-label" for="category">Category</label>
+      <input id="category" name="category" class="form-input" placeholder="Workflow, Machine Learning, Portfolio" />
+    </div>
+    <div>
+      <label class="form-label" for="excerpt">Excerpt</label>
+      <textarea id="excerpt" name="excerpt" rows="3" class="form-input" placeholder="Short summary shown in lists"></textarea>
+    </div>
+    <div>
+      <label class="form-label" for="content">Content</label>
+      <textarea id="content" name="content" rows="12" class="form-input" placeholder="Use simple HTML for headings and paragraphs"></textarea>
+    </div>
+    <label class="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+      <input name="featured" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
+      Mark as featured
+    </label>
+    <button type="submit" class="btn-primary">Create project</button>
+  </form>
+
+  <div class="section-panel">
+    <div class="section-heading">Recent projects</div>
+    <div class="mt-4 space-y-3">
+      {% for project in recent_projects %}
+        <a href="{{ url_for('project', slug=project.slug) }}" class="block rounded-2xl border border-amber-200 bg-white p-4 text-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+          <div class="card-title font-medium text-slate-950 dark:text-slate-100">{{ project.title }}</div>
+          <div class="mt-1 text-xs uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">{{ project.category }}</div>
+          <p class="card-copy mt-2 text-slate-600 dark:text-slate-400">{{ project.excerpt }}</p>
+        </a>
+      {% else %}
+        <p class="text-sm text-slate-600 dark:text-slate-400">No projects yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

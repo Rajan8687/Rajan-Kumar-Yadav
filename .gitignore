@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Database
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files (keep directory, ignore contents)
+static/uploads/profile_pics/*
+
+# System
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env.local
+.env*.local

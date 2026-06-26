@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} | {{ profile.name }}{% endblock %}
+{% block meta_description %}{{ article.excerpt }}{% endblock %}
+
+{% block content %}
+<article class="mx-auto max-w-4xl">
+  <div class="section-panel">
+    <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+      <span>{{ article.category }}</span>
+      <span class="text-slate-400">•</span>
+      <span>{{ article.created_at.strftime("%b %d, %Y") }}</span>
+      <span class="text-slate-400">•</span>
+      <span>By {{ article.author.username if article.author else profile.name }}</span>
+      <span class="text-slate-400">•</span>
+      <span>{{ article.content | reading_time }} min read</span>
+    </div>
+    <div class="mt-4 grid gap-3 lg:flex lg:items-center lg:justify-between lg:gap-6 text-sm text-slate-600 dark:text-slate-400">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/70">
+          <i data-lucide="eye" class="h-4 w-4"></i>
+          {{ article.views or 0 }} views
+        </span>
+        {% if current_user %}
+        <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/70">
+          <i data-lucide="heart" class="h-4 w-4"></i>
+          <span id="likes-count">{{ article.likes or 0 }}</span> likes
+        </span>
+        <a href="#leave-comment" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/70">
+          <i data-lucide="message-circle" class="h-4 w-4"></i>
+          {{ article.comments or 0 }} comments
+        </a>
+        {% endif %}
+      </div>
+      {% if current_user %}
+      <form id="like-form" class="inline" method="POST" action="{{ url_for('like_article', slug=article.slug) }}" data-slug="{{ article.slug }}">
+        <button type="submit" id="like-button" class="like-btn btn-secondary inline-flex items-center gap-2">
+          <i data-lucide="heart" class="h-4 w-4"></i>
+          <span id="like-button-text">Like</span>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    <div class="rich-text mt-6">
+      {{ article.content | safe }}
+    </div>
+    {% if current_user and current_user.id == article.author_id %}
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-4 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50" href="{{ url_for('edit_article', article_id=article.id) }}"><i data-lucide="edit-2" class="h-4 w-4"></i> Edit</a>
+        <form method="post" action="{{ url_for('delete_article', article_id=article.id) }}" onsubmit="return confirm('Delete this article?');" class="inline">
+          <button type="submit" class="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-200 dark:border-red-700 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"><i data-lucide="trash-2" class="h-4 w-4"></i> Delete</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if current_user %}
+  <div id="leave-comment" class="mt-6 section-panel rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
+    <h2 class="text-xl font-semibold text-slate-950 dark:text-white">Leave a comment</h2>
+    <form method="post" action="{{ url_for('comment_article', slug=article.slug) }}" class="mt-4 space-y-4">
+      <textarea name="comment" rows="4" class="w-full rounded-3xl border border-slate-300 bg-slate-50 p-4 text-sm text-slate-900 outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" placeholder="Write your comment here..."></textarea>
+      <button type="submit" class="btn-primary">Post comment</button>
+    </form>
+  </div>
+
+  <div class="mt-6 section-panel rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
+    <h2 class="text-xl font-semibold text-slate-950 dark:text-white">Comments</h2>
+    <div class="mt-4 space-y-4">
+      {% if comments %}
+        {% for comment in comments %}
+          <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/80">
+            <div class="flex items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
+              <span>{{ comment.user.username if comment.user else 'Guest' }}</span>
+              <span>{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</span>
+            </div>
+            <p class="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-200" id="comment-text-{{ comment.id }}">{{ comment.text }}</p>
+            {% set is_owner = (current_user and comment.user_id == current_user.id) or (comment.id in session.get('guest_comment_ids', [])) %}
+            {% if is_owner %}
+              <div class="mt-3 flex items-center gap-2">
+                <button type="button" class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50" onclick="toggleEditForm({{ comment.id }})"><i data-lucide="edit-2" class="h-3 w-3"></i> Edit</button>
+                <form method="post" action="{{ url_for('delete_comment', slug=article.slug, comment_id=comment.id) }}" onsubmit="return confirm('Delete this comment?');" class="inline">
+                  <button type="submit" class="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-3 py-1 text-xs font-medium text-red-700 transition hover:bg-red-200 dark:border-red-700 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"><i data-lucide="trash-2" class="h-3 w-3"></i> Delete</button>
+                </form>
+              </div>
+              <form method="post" action="{{ url_for('edit_comment', slug=article.slug, comment_id=comment.id) }}" class="mt-3 hidden" id="edit-form-{{ comment.id }}">
+                <textarea name="comment" rows="3" class="w-full rounded-3xl border border-slate-300 bg-slate-50 p-3 text-sm text-slate-900 outline-none" placeholder="Edit your comment...">{{ comment.text }}</textarea>
+                <div class="mt-2 flex gap-2">
+                  <button type="submit" class="btn-primary">Save</button>
+                  <button type="button" class="btn-secondary" onclick="toggleEditForm({{ comment.id }})">Cancel</button>
+                </div>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
+          No comments yet. Be the first to comment.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .like-btn.active {
+    color: #f59e0b !important;
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-color: #f59e0b !important;
+  }
+  .like-btn.active svg,
+  .like-btn.active i {
+    color: #f59e0b !important;
+    fill: #f59e0b !important;
+  }
+</style>
+  <script>
+    function toggleEditForm(id) {
+      const form = document.getElementById('edit-form-' + id);
+      if (!form) return;
+      form.classList.toggle('hidden');
+    }
+
+    // Like button functionality - all inside DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('Article page JavaScript loaded!');
+      const likeForm = document.getElementById('like-form');
+      const likeBtn = document.getElementById('like-button');
+      const likesCountEl = document.getElementById('likes-count');
+      
+      if (!likeForm || !likeBtn) {
+        console.warn('Like form or button not found!');
+        return;
+      }
+      console.log('Like form found:', likeForm.id, 'Action:', likeForm.action, 'Method:', likeForm.method);
+      
+      const articleSlug = likeForm.dataset.slug;
+      
+      // Check if user already liked on page load
+      fetch('/article/' + articleSlug + '/check-like', {
+        method: 'GET',
+        credentials: 'same-origin'
+      }).then(res => res.json()).then(data => {
+        if (data && data.is_liked) {
+          likeBtn.classList.add('active');
+          const btnText = document.getElementById('like-button-text');
+          if (btnText) btnText.textContent = 'Unlike';
+        }
+      }).catch(err => {
+        console.error('Check like failed:', err);
+      });
+      
+      // Like form submit handler - prevent default and use AJAX
+      likeForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Disable button during request
+        likeBtn.disabled = true;
+        
+        fetch(likeForm.action, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+          },
+          credentials: 'same-origin'
+        }).then(function(res) {
+          if (!res.ok) throw new Error('Network response was not ok: ' + res.status);
+          return res.json();
+        }).then(function(data) {
+          if (data) {
+            // Update likes count
+            if (typeof data.likes !== 'undefined' && likesCountEl) {
+              likesCountEl.textContent = data.likes;
+            }
+            // Toggle button state and text
+            const btnText = document.getElementById('like-button-text');
+            if (data.status === 'liked') {
+              likeBtn.classList.add('active');
+              if (btnText) btnText.textContent = 'Unlike';
+            } else if (data.status === 'unliked') {
+              likeBtn.classList.remove('active');
+              if (btnText) btnText.textContent = 'Like';
+            }
+          }
+        }).catch(function(err) {
+          console.error('Like request failed:', err);
+        }).finally(function() {
+          likeBtn.disabled = false;
+        });
+      });
+    });
+  </script>
+{% endblock %}
