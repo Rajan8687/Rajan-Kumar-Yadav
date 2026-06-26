@@ -3,13 +3,54 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}{{ profile.name }} | Portfolio{% endblock %}</title>
+    <title>{% block title %}{{ profile.name }} - Portfolio | Full Stack Developer{% endblock %}</title>
     <meta
       name="description"
-      content="{% block meta_description %}{{ profile.tagline }}{% endblock %}"
+      content="{% block meta_description %}Rajan Kumar Yadav - Full Stack Developer portfolio showcasing projects in Python, JavaScript, React, and Flask.{% endblock %}"
     />
+    <meta name="author" content="Rajan Kumar Yadav" />
+    <meta name="keywords" content="Rajan Kumar Yadav, portfolio, full stack developer, Python, JavaScript, React, Flask, web development" />
     <meta name="theme-color" content="#f59e0b" />
     <link rel="icon" href="{{ url_for('static', filename='img/logo.jpg') }}" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ request.url_root }}" />
+    <meta property="og:title" content="Rajan Kumar Yadav - Full Stack Developer Portfolio" />
+    <meta property="og:description" content="Rajan Kumar Yadav - Full Stack Developer portfolio showcasing projects in Python, JavaScript, React, and Flask." />
+    <meta property="og:image" content="{{ url_for('static', filename='img/logo.jpg', _external=True) }}" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="{{ request.url_root }}" />
+    <meta property="twitter:title" content="Rajan Kumar Yadav - Full Stack Developer Portfolio" />
+    <meta property="twitter:description" content="Rajan Kumar Yadav - Full Stack Developer portfolio showcasing projects in Python, JavaScript, React, and Flask." />
+    <meta property="twitter:image" content="{{ url_for('static', filename='img/logo.jpg', _external=True) }}" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ request.url }}" />
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Rajan Kumar Yadav",
+      "description": "Full Stack Developer specializing in Python, JavaScript, React, and Flask. Building modern web applications with clean, efficient code.",
+      "url": "{{ request.url_root }}",
+      "image": "{{ url_for('static', filename='img/logo.jpg', _external=True) }}",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ request.url_root }}"
+      },
+      "sameAs": [
+        "{{ profile.github }}",
+        "{{ profile.linkedin if profile.linkedin else '' }}",
+        "{{ profile.twitter if profile.twitter else '' }}"
+      ]
+    }
+    </script>
+    
     <script>
       tailwind = { config: { darkMode: "class" } };
     </script>
@@ -29,7 +70,7 @@
         <a href="{{ url_for('index') }}" class="flex items-center gap-3">
           <img
             src="{{ url_for('static', filename='img/logo.jpg') }}"
-            alt="{{ profile.name }}"
+            alt="Rajan Kumar Yadav - Full Stack Developer Profile Photo"
             class="h-12 w-12 rounded-2xl object-cover ring-1 ring-sky-300/60 shadow-sm dark:ring-sky-500/30"
           />
           <div class="leading-tight">
@@ -41,7 +82,7 @@
         </a>
 
         <div class="flex items-center gap-2">
-          <button id="mobile-menu-button" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 md:hidden" aria-expanded="false" aria-controls="mobile-menu">
+          <button id="mobile-menu-button" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-red-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 dark:border-slate-700 dark:bg-amber-700 dark:text-slate-200 dark:hover:bg-amber-600 dark:hover:text-white md:hidden" aria-expanded="false" aria-controls="mobile-menu">
             <i data-lucide="menu" class="h-5 w-5"></i>
           </button>
           <nav id="desktop-nav" class="hidden items-center gap-1 md:flex">
@@ -147,7 +188,7 @@
         </div>
       </div>
       <div class="border-t border-white/50 px-4 py-4 text-center text-xs text-slate-500 dark:border-white/5 dark:text-slate-400">
-        © {{ current_year }} {{ profile.name }}.
+        © {{ current_year }} Rajan Kumar Yadav. All rights reserved.
       </div>
     </footer>
 

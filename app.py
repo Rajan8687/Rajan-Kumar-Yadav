@@ -57,12 +57,12 @@ DEFAULT_PROFILE = {
     "tagline": "Building scalable AI systems from data to deployment.",
     "email": "yadavrajan8687@gmail.com",
     "university": "CMR University, Bangalore",
-    "github": "https://github.com/Rajan8687/Capstone-Project",
+    "github": "https://github.com/Rajan8687/Rajan-Kumar-Yadav",
     "linkedin": "https://www.linkedin.com/in/rajan8687",
     "facebook": "https://www.facebook.com/adhakari.rajan.9",
     "instagram": "https://www.instagram.com/adhikari_rajan86/?hl=en",
     "location": "Bangalore, India",
-    "live_project": "https://capstone-project-x9p0.onrender.com/",
+    "live_project": "https://rajan-kumar-yadav.vercel.app/",
 }
 
 PROFILE_FIELDS = list(DEFAULT_PROFILE.keys())
@@ -133,8 +133,87 @@ CAPSTONE_PROJECT = {
 <p>Clean the dataset, explore patterns, design a model workflow, and present the result in a way that is easy to understand.</p>
 <h2>Outcome</h2>
 <p>A focused capstone example that reflects my work in data science, machine learning engineering, and MLOps.</p>
+
+<h2>Links</h2>
+<p><strong>GitHub Repository:</strong> <a href="https://github.com/Rajan8687/Capstone-Project" target="_blank">https://github.com/Rajan8687/Capstone-Project</a></p>
+<p><strong>Live Website:</strong> <a href="https://capstone-project-x9p0.onrender.com/" target="_blank">https://capstone-project-x9p0.onrender.com/</a></p>
 """.strip(),
 }
+
+PORTFOLIO_PROJECT = {
+    "title": "Rajan Kumar Yadav Portfolio",
+    "slug": "rajan-kumar-yadav-portfolio",
+    "category": "Portfolio",
+    "excerpt": "My personal portfolio website showcasing my projects, skills, and experience in Data Science, ML Engineering, and MLOps.",
+    "featured": True,
+    "content": """
+<h2>Project Overview</h2>
+<p>This is my personal portfolio website built to showcase my work and skills in Data Science, Machine Learning Engineering, and MLOps. The portfolio includes my projects, resume, blog articles, and contact information.</p>
+
+<h2>Features</h2>
+<ul>
+<li>Project showcase with detailed descriptions</li>
+<li>Blog section for technical articles</li>
+<li>Responsive design for all devices</li>
+<li>Contact form for professional inquiries</li>
+<li>User authentication and dashboard for content management</li>
+</ul>
+
+<h2>Technologies Used</h2>
+<ul>
+<li>Python</li>
+<li>Flask</li>
+<li>SQLAlchemy</li>
+<li>Tailwind CSS</li>
+<li>HTML5</li>
+<li>JavaScript</li>
+</ul>
+
+<h2>Links</h2>
+<p><strong>GitHub Repository:</strong> <a href="https://github.com/Rajan8687/Rajan-Kumar-Yadav" target="_blank">https://github.com/Rajan8687/Rajan-Kumar-Yadav</a></p>
+<p><strong>Live Website:</strong> <a href="https://rajan-kumar-yadav.vercel.app/" target="_blank">https://rajan-kumar-yadav.vercel.app/</a></p>
+""".strip(),
+}
+
+# Rich featured-project metadata used by the homepage showcase cards.
+# Each entry mirrors the DB Project plus extra display fields (icon, tags,
+# highlights, github/live links) so the homepage can render a richer card.
+FEATURED_PROJECTS = [
+    {
+        "title": PORTFOLIO_PROJECT["title"],
+        "slug": PORTFOLIO_PROJECT["slug"],
+        "category": PORTFOLIO_PROJECT["category"],
+        "excerpt": PORTFOLIO_PROJECT["excerpt"],
+        "icon": "layout-dashboard",
+        "accent": "blue",
+        "tags": ["Flask", "Python", "Tailwind CSS", "SQLAlchemy", "Responsive"],
+        "highlights": [
+            "Project showcase with detailed descriptions",
+            "Blog with likes & comments",
+            "Auth, dashboard & profile management",
+            "Fully responsive dark/light UI",
+        ],
+        "github": "https://github.com/Rajan8687/Rajan-Kumar-Yadav",
+        "live": "https://rajan-kumar-yadav.vercel.app/",
+    },
+    {
+        "title": CAPSTONE_PROJECT["title"],
+        "slug": CAPSTONE_PROJECT["slug"],
+        "category": CAPSTONE_PROJECT["category"],
+        "excerpt": CAPSTONE_PROJECT["excerpt"],
+        "icon": "brain-circuit",
+        "accent": "amber",
+        "tags": ["Data Science", "Machine Learning", "MLOps", "Deployment"],
+        "highlights": [
+            "End-to-end data pipeline",
+            "EDA, modeling & evaluation",
+            "Model packaging & automation",
+            "Live deployment on Render",
+        ],
+        "github": "https://github.com/Rajan8687/Capstone-Project",
+        "live": "https://capstone-project-x9p0.onrender.com/",
+    },
+]
 
 
 class SiteProfile(db.Model):
@@ -255,20 +334,28 @@ def seed_defaults() -> None:
     if not SiteProfile.query.first():
         db.session.add(SiteProfile(**DEFAULT_PROFILE))
 
-    desired_slug = CAPSTONE_PROJECT["slug"]
-    for project in Project.query.all():
-        if project.slug != desired_slug:
-            db.session.delete(project)
-
-    capstone = Project.query.filter_by(slug=desired_slug).first()
-    if capstone is None:
-        db.session.add(Project(**CAPSTONE_PROJECT))
-    else:
-        capstone.title = CAPSTONE_PROJECT["title"]
-        capstone.category = CAPSTONE_PROJECT["category"]
-        capstone.excerpt = CAPSTONE_PROJECT["excerpt"]
-        capstone.content = CAPSTONE_PROJECT["content"]
-        capstone.featured = CAPSTONE_PROJECT["featured"]
+    # Upsert the two featured projects (Portfolio + Capstone) so they are
+    # always available on the homepage and /projects page. Existing rows with
+    # the same slug are updated in place; any other projects are left intact.
+    for source in (PORTFOLIO_PROJECT, CAPSTONE_PROJECT):
+        existing = Project.query.filter_by(slug=source["slug"]).first()
+        if existing:
+            existing.title = source["title"]
+            existing.category = source["category"]
+            existing.excerpt = source["excerpt"]
+            existing.content = source["content"]
+            existing.featured = source.get("featured", True)
+        else:
+            db.session.add(
+                Project(
+                    title=source["title"],
+                    slug=source["slug"],
+                    category=source["category"],
+                    excerpt=source["excerpt"],
+                    content=source["content"],
+                    featured=source.get("featured", True),
+                )
+            )
 
     if not User.query.first():
         bootstrap_username = os.getenv("ADMIN_USERNAME", "admin")
@@ -509,18 +596,13 @@ def inject_globals():
         "skills": SKILLS,
         "highlights": HIGHLIGHTS,
         "social_links": SOCIAL_LINKS,
+        "featured_projects": FEATURED_PROJECTS,
     }
 
 
 @app.route("/")
 def index():
-    projects = Project.query.order_by(Project.featured.desc(), Project.created_at.desc()).all()
-    featured_project = projects[0] if projects else None
-    return render_template(
-        "index.html",
-        projects=projects,
-        featured_project=featured_project,
-    )
+    return render_template("index.html")
 
 
 @app.route("/resume")
@@ -543,7 +625,10 @@ def projects():
 @app.route("/project/<slug>")
 def project(slug):
     article = Project.query.filter_by(slug=slug).first_or_404()
-    return render_template("project.html", project=article)
+    # Attach rich metadata (github/live links, tags, icon) from FEATURED_PROJECTS
+    # when available so the detail page can render project-specific action buttons.
+    featured = next((p for p in FEATURED_PROJECTS if p["slug"] == slug), None)
+    return render_template("project.html", project=article, featured=featured)
 
 
 @app.route("/blog")

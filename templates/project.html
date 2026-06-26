@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}{{ project.title }} | {{ profile.name }}{% endblock %}
-{% block meta_description %}{{ project.excerpt }}{% endblock %}
+{% block title %}{{ project.title }} | Rajan Kumar Yadav Portfolio{% endblock %}
+{% block meta_description %}{{ project.excerpt }} - Project by Rajan Kumar Yadav, Full Stack Developer & AI Engineer.{% endblock %}
 
 {% block content %}
 <article class="mx-auto max-w-4xl">
@@ -16,9 +16,28 @@
     <h1 class="post-title mt-4 text-4xl font-semibold text-slate-950 dark:text-white">{{ project.title }}</h1>
     <p class="post-copy mt-4 max-w-3xl text-sm leading-8 text-slate-600 dark:text-slate-400">{{ project.excerpt }}</p>
     <div class="mt-5 flex flex-wrap gap-3">
-      <a class="btn-primary" href="{{ profile.live_project }}" target="_blank" rel="noreferrer">Open live project</a>
-      <a class="btn-secondary" href="{{ profile.github }}" target="_blank" rel="noreferrer">GitHub repo</a>
+      {% if featured %}
+        <a class="btn-primary" href="{{ featured.live }}" target="_blank" rel="noreferrer">
+          <i data-lucide="external-link" class="h-4 w-4"></i>
+          Open live project
+        </a>
+        <a class="btn-secondary" href="{{ featured.github }}" target="_blank" rel="noreferrer">
+          <i data-lucide="github" class="h-4 w-4"></i>
+          GitHub repo
+        </a>
+      {% else %}
+        <a class="btn-primary" href="{{ profile.live_project }}" target="_blank" rel="noreferrer">Open live project</a>
+        <a class="btn-secondary" href="{{ profile.github }}" target="_blank" rel="noreferrer">GitHub repo</a>
+      {% endif %}
     </div>
+
+    {% if featured and featured.tags %}
+      <div class="mt-5 flex flex-wrap gap-2">
+        {% for tag in featured.tags %}
+          <span class="pill pill-blue !py-1 !px-2.5 !text-xs">{{ tag }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
 
   <div class="mt-6 section-panel">
