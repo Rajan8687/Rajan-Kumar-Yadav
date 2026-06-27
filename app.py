@@ -3,7 +3,7 @@ import os
 import re
 import smtplib
 import ssl
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from email.message import EmailMessage
 
@@ -966,7 +966,7 @@ def forgot_password():
             PasswordResetToken.query.filter_by(user_id=user.id, used=False).delete()
             
             # Create new token that expires in 1 hour
-            expires_at = datetime.utcnow() + datetime.timedelta(hours=1)
+            expires_at = datetime.utcnow() + timedelta(hours=1)
             reset_token = PasswordResetToken(
                 user_id=user.id,
                 token=token,
