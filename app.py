@@ -305,6 +305,16 @@ class UserProfile(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
 
+class PasswordResetToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    user = db.relationship("User", backref=db.backref("password_reset_tokens", lazy=True))
+
+
 def slugify(value: str) -> str:
     value = value.strip().lower()
     value = re.sub(r"[^a-z0-9]+", "-", value)
@@ -934,6 +944,131 @@ def logout():
     session.pop("user_id", None)
     flash("You have been logged out.", "success")
     return redirect(url_for("index"))
+
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        
+        if not email:
+            flash("Please enter your email address.", "danger")
+            return redirect(url_for("forgot_password"))
+        
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Generate a unique token
+            import secrets
+            import string
+            token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+            
+            # Delete any existing tokens for this user
+            PasswordResetToken.query.filter_by(user_id=user.id, used=False).delete()
+            
+            # Create new token that expires in 1 hour
+            expires_at = datetime.utcnow() + datetime.timedelta(hours=1)
+            reset_token = PasswordResetToken(
+                user_id=user.id,
+                token=token,
+                expires_at=expires_at,
+                used=False
+            )
+            db.session.add(reset_token)
+            db.session.commit()
+            
+            # Send email with reset link
+            try:
+                settings = _smtp_settings()
+                if settings["host"] and settings["port"] and settings["sender"]:
+                    reset_link = url_for("reset_password", token=token, _external=True)
+                    
+                    owner_email = get_profile_dict()["email"]
+                    subject = f"Password Reset Request for {owner_email}"
+                    
+                    body = (
+                        f"You requested a password reset for your account.\n\n"
+                        f"Click the link below to reset your password:\n"
+                        f"{reset_link}\n\n"
+                        f"This link will expire in 1 hour.\n\n"
+                        f"If you didn't request this, please ignore this email."
+                    )
+                    
+                    mail = EmailMessage()
+                    mail["Subject"] = subject
+                    mail["From"] = settings["sender"]
+                    mail["To"] = user.email
+                    mail.set_content(body)
+                    
+                    context = ssl.create_default_context()
+                    if settings["use_ssl"]:
+                        with smtplib.SMTP_SSL(settings["host"], settings["port"], context=context) as smtp:
+                            if settings["username"]:
+                                smtp.login(settings["username"], settings["password"])
+                            smtp.send_message(mail)
+                    else:
+                        with smtplib.SMTP(settings["host"], settings["port"]) as smtp:
+                            if settings["use_tls"]:
+                                smtp.starttls(context=context)
+                            if settings["username"]:
+                                smtp.login(settings["username"], settings["password"])
+                            smtp.send_message(mail)
+                    
+                    flash("Password reset link has been sent to your email.", "success")
+                else:
+                    flash("Email is not configured. Please contact the administrator directly at " + get_profile_dict()["email"] + " to reset your password.", "warning")
+            except Exception as e:
+                app.logger.exception(f"Failed to send password reset email: {e}")
+                flash("Failed to send email. Please contact the administrator directly at " + get_profile_dict()["email"] + " to reset your password.", "danger")
+        else:
+            # Always show success message to prevent email enumeration
+            flash("If this email exists in our system, a password reset link has been sent.", "success")
+        
+        return redirect(url_for("forgot_password"))
+    
+    return render_template("forgot_password.html")
+
+
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    reset_token = PasswordResetToken.query.filter_by(token=token, used=False).first()
+    
+    if not reset_token:
+        flash("Invalid or expired password reset link.", "danger")
+        return redirect(url_for("forgot_password"))
+    
+    if reset_token.expires_at < datetime.utcnow():
+        flash("Password reset link has expired.", "danger")
+        return redirect(url_for("forgot_password"))
+    
+    if request.method == "POST":
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+        
+        if not new_password or not confirm_password:
+            flash("Please fill in both password fields.", "danger")
+            return redirect(url_for("reset_password", token=token))
+        
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return redirect(url_for("reset_password", token=token))
+        
+        if len(new_password) < 6:
+            flash("Password must be at least 6 characters.", "danger")
+            return redirect(url_for("reset_password", token=token))
+        
+        # Update user password
+        user = reset_token.user
+        user.password_hash = generate_password_hash(new_password)
+        
+        # Mark token as used
+        reset_token.used = True
+        
+        db.session.commit()
+        
+        flash("Your password has been reset. You can now log in with your new password.", "success")
+        return redirect(url_for("login"))
+    
+    return render_template("reset_password.html", token=token)
 
 
 @app.route("/dashboard")

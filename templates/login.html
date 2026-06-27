@@ -26,12 +26,23 @@
       </div>
       <div>
         <label class="form-label" for="password">Password</label>
-        <input id="password" name="password" type="password" class="form-input" placeholder="Enter password" />
+        <div class="relative">
+          <input id="password" name="password" type="password" class="form-input pr-12" placeholder="Enter password" />
+          <button type="button" onclick="togglePassword('password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="eye" id="password-icon" class="h-5 w-5"></i>
+          </button>
+        </div>
       </div>
-      <button type="submit" class="btn-primary">Login</button>
+      <div class="flex justify-center gap-3">
+        <button type="submit" class="btn-primary">Login</button>
+        <button type="button" onclick="toggleRegisterForm()" class="btn-secondary">Register</button>
+      </div>
+      <div class="text-center mt-2">
+        <a href="{{ url_for('forgot_password') }}" class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">Forgot password?</a>
+      </div>
     </form>
 
-    <form method="post" action="{{ url_for('register') }}" enctype="multipart/form-data" class="section-panel space-y-4">
+    <form id="registerForm" method="post" action="{{ url_for('register') }}" enctype="multipart/form-data" class="section-panel space-y-4 hidden" style="display: none;">
       <div class="section-heading">Register</div>
       <div>
         <label class="form-label" for="username">Username</label>
@@ -47,14 +58,63 @@
       </div>
       <div>
         <label class="form-label" for="reg_password">Password</label>
-        <input id="reg_password" name="password" type="password" class="form-input" placeholder="Create a password" />
+        <div class="relative">
+          <input id="reg_password" name="password" type="password" class="form-input pr-12" placeholder="Create a password" />
+          <button type="button" onclick="togglePassword('reg_password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="eye" id="reg_password-icon" class="h-5 w-5"></i>
+          </button>
+        </div>
       </div>
       <div>
         <label class="form-label" for="confirm_password">Confirm password</label>
-        <input id="confirm_password" name="confirm_password" type="password" class="form-input" placeholder="Repeat password" />
+        <div class="relative">
+          <input id="confirm_password" name="confirm_password" type="password" class="form-input pr-12" placeholder="Repeat password" />
+          <button type="button" onclick="togglePassword('confirm_password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+            <i data-lucide="eye" id="confirm_password-icon" class="h-5 w-5"></i>
+          </button>
+        </div>
       </div>
-      <button type="submit" class="btn-primary">Create account</button>
+      <div class="flex justify-center">
+        <button type="submit" class="btn-primary">Create account</button>
+      </div>
     </form>
   </div>
 </section>
+
+{% block scripts %}
+<script>
+  function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(inputId + '-icon');
+    
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (icon) {
+        icon.setAttribute('data-lucide', 'eye-off');
+      }
+    } else {
+      input.type = 'password';
+      if (icon) {
+        icon.setAttribute('data-lucide', 'eye');
+      }
+    }
+    
+    // Re-initialize lucide icons after changing data-lucide attribute
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+  
+  function toggleRegisterForm() {
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm.style.display === 'none' || registerForm.style.display === '') {
+      registerForm.style.display = 'block';
+      registerForm.classList.remove('hidden');
+    } else {
+      registerForm.style.display = 'none';
+      registerForm.classList.add('hidden');
+    }
+  }
+</script>
+{% endblock %}
 {% endblock %}
