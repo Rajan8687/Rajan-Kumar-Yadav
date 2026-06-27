@@ -17,17 +17,23 @@
     <p class="post-copy mt-4 max-w-3xl text-sm leading-8 text-slate-600 dark:text-slate-400">{{ project.excerpt }}</p>
     <div class="mt-5 flex flex-wrap gap-3">
       {% if featured %}
-        <a class="btn-primary" href="{{ featured.live }}" target="_blank" rel="noreferrer">
+        <a class="btn-primary flex items-center gap-2" href="{{ featured.live }}" target="_blank" rel="noreferrer">
           <i data-lucide="external-link" class="h-4 w-4"></i>
           Open live project
         </a>
-        <a class="btn-secondary" href="{{ featured.github }}" target="_blank" rel="noreferrer">
-          <i data-lucide="github" class="h-4 w-4"></i>
+        <a class="btn-secondary flex items-center gap-2" href="{{ featured.github }}" target="_blank" rel="noreferrer">
+          <i data-lucide="external-link" class="h-4 w-4"></i>
           GitHub repo
         </a>
       {% else %}
-        <a class="btn-primary" href="{{ profile.live_project }}" target="_blank" rel="noreferrer">Open live project</a>
-        <a class="btn-secondary" href="{{ profile.github }}" target="_blank" rel="noreferrer">GitHub repo</a>
+        <a class="btn-primary flex items-center gap-2" href="{{ profile.live_project }}" target="_blank" rel="noreferrer">
+          <i data-lucide="external-link" class="h-4 w-4"></i>
+          Open live project
+        </a>
+        <a class="btn-secondary flex items-center gap-2" href="{{ profile.github }}" target="_blank" rel="noreferrer">
+          <i data-lucide="external-link" class="h-4 w-4"></i>
+          GitHub repo
+        </a>
       {% endif %}
     </div>
 

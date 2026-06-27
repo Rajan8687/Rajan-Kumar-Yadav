@@ -7,7 +7,7 @@ from datetime import datetime
 from functools import wraps
 from email.message import EmailMessage
 
-from flask import Flask, abort, flash, redirect, render_template, request, send_file, session, url_for, jsonify
+from flask import Flask, abort, current_app, flash, redirect, render_template, request, send_file, send_from_directory, session, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect, or_, text
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -57,12 +57,13 @@ DEFAULT_PROFILE = {
     "tagline": "Building scalable AI systems from data to deployment.",
     "email": "yadavrajan8687@gmail.com",
     "university": "CMR University, Bangalore",
-    "github": "https://github.com/Rajan8687/Rajan-Kumar-Yadav",
+    "github": "https://github.com/Rajan8687",
     "linkedin": "https://www.linkedin.com/in/rajan8687",
     "facebook": "https://www.facebook.com/adhakari.rajan.9",
     "instagram": "https://www.instagram.com/adhikari_rajan86/?hl=en",
     "location": "Bangalore, India",
     "live_project": "https://rajan-kumar-yadav.vercel.app/",
+    "resume": "resume.pdf",
 }
 
 PROFILE_FIELDS = list(DEFAULT_PROFILE.keys())
@@ -229,6 +230,7 @@ class SiteProfile(db.Model):
     instagram = db.Column(db.String(300), nullable=False)
     location = db.Column(db.String(200), nullable=False)
     live_project = db.Column(db.String(300), nullable=False)
+    resume = db.Column(db.String(300), nullable=False, default="resume.pdf")
 
 
 class Project(db.Model):
@@ -393,6 +395,7 @@ def get_profile_dict() -> dict:
         "instagram": profile.instagram,
         "location": profile.location,
         "live_project": profile.live_project,
+        "resume": profile.resume,
     }
 
 
@@ -448,6 +451,19 @@ def ensure_article_metrics_columns() -> None:
             connection.execute(text("ALTER TABLE article ADD COLUMN likes INTEGER DEFAULT 0 NOT NULL"))
         if "comments" not in existing_columns:
             connection.execute(text("ALTER TABLE article ADD COLUMN comments INTEGER DEFAULT 0 NOT NULL"))
+
+
+def ensure_site_profile_resume_column() -> None:
+    inspector = inspect(db.engine)
+    if "site_profile" not in inspector.get_table_names():
+        return
+
+    existing_columns = [column["name"] for column in inspector.get_columns("site_profile")]
+    if "resume" in existing_columns:
+        return
+
+    with db.engine.begin() as connection:
+        connection.execute(text("ALTER TABLE site_profile ADD COLUMN resume VARCHAR(300) DEFAULT 'resume.pdf' NOT NULL"))
 
 
 def get_admin_password() -> str:
@@ -574,6 +590,7 @@ with app.app_context():
     ensure_article_author_column()
     ensure_article_metrics_columns()
     ensure_user_profile_full_name_column()
+    ensure_site_profile_resume_column()
     seed_defaults()
     cleanup_orphan_articles()
 
@@ -607,13 +624,13 @@ def index():
 
 @app.route("/resume")
 def resume_download():
-    resume_path = os.path.join(app.static_folder, "resume.pdf")
-    return send_file(
-        resume_path,
-        as_attachment=True,
-        download_name="Rajan_Kumar_Yadav_Resume.pdf",
-        mimetype="application/pdf",
-    )
+    profile = get_profile_dict()
+    resume_path_stored = profile.get("resume", "resume.pdf")
+    # Extract just the filename, handling both "resume.pdf" and "/static/resume.pdf"
+    import os
+    resume_filename = os.path.basename(resume_path_stored)
+    resume_path = os.path.join(current_app.root_path, "static", resume_filename)
+    return send_file(resume_path, as_attachment=True, download_name="Rajan_Kumar_Yadav_Resume.pdf", mimetype="application/pdf")
 
 
 @app.route("/projects")

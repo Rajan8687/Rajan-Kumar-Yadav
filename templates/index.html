@@ -153,15 +153,15 @@
           </div>
 
           <div class="project-link-row mt-6 pt-2">
-            <a class="btn-primary" href="{{ project.live }}" target="_blank" rel="noreferrer">
+            <a class="btn-primary flex items-center gap-2" href="{{ project.live }}" target="_blank" rel="noreferrer">
               <i data-lucide="external-link" class="h-4 w-4"></i>
               Live demo
             </a>
-            <a class="btn-secondary" href="{{ project.github }}" target="_blank" rel="noreferrer">
-              <i data-lucide="github" class="h-4 w-4"></i>
+            <a class="btn-secondary flex items-center gap-2" href="{{ project.github }}" target="_blank" rel="noreferrer">
+              <i data-lucide="external-link" class="h-4 w-4"></i>
               Source code
             </a>
-            <a class="btn-secondary" href="{{ url_for('project', slug=project.slug) }}">
+            <a class="btn-secondary flex items-center gap-2" href="{{ url_for('project', slug=project.slug) }}">
               <i data-lucide="arrow-right" class="h-4 w-4"></i>
               Details
             </a>
@@ -184,11 +184,7 @@
   <div class="section-panel">
     <div class="section-heading">Quick links</div>
     <div class="mt-4 grid gap-3 sm:grid-cols-2">
-      <a href="{{ profile.github }}" target="_blank" rel="noreferrer" class="social-link social-link-blue">
-        <i data-lucide="github" class="h-4 w-4"></i>
-        <span>GitHub repo</span>
-      </a>
-      {% for link in social_links if link.label != 'GitHub' %}
+      {% for link in social_links %}
         <a href="{{ link.href }}" target="_blank" rel="noreferrer" class="social-link social-link-blue">
           <i data-lucide="external-link" class="h-4 w-4"></i>
           <span>{{ link.label }}</span>
