@@ -1,18 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="scroll-smooth dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
-      {% block title %}Rajan Kumar Yadav | Python Developer | Flask Developer |
-      Data Science & MLOps{% endblock %}
+      {% block title %}Rajan Kumar Yadav | ML Engineer | Data Scientist | Python
+      Developer | Portfolio{% endblock %}
     </title>
     <meta
       name="description"
-      content="{% block meta_description %}Official portfolio of Rajan Kumar Yadav, Python Developer, Flask Developer, Data Science student, and MLOps enthusiast. Explore projects, blogs, and web development work.{% endblock %}"
+      content="{% block meta_description %}Rajan Kumar Yadav is an ML Engineer, Data Scientist, Python & Flask Developer specializing in Machine Learning, MLOps, Data Engineering, and modern web development. Explore projects, blogs, and portfolio.{% endblock %}"
     />
+    <meta name="robots" content="index, follow" />
     <meta name="author" content="Rajan Kumar Yadav" />
-    <meta name="google-site-verification" content="4XZjuwFHmWlNXBTDCLVX3UPdhC7JQ6xh0m5KDbbzRm8" />
+    <meta
+      name="google-site-verification"
+      content="4XZjuwFHmWlNXBTDCLVX3UPdhC7JQ6xh0m5KDbbzRm8"
+    />
     <meta
       name="keywords"
       content="Rajan Kumar Yadav, Python Developer, Flask Developer, Django Developer, Data Science, MLOps, Machine Learning, Portfolio, Web Developer"
@@ -25,8 +29,9 @@
     <meta property="og:url" content="{{ request.url_root }}" />
     <meta
       property="og:title"
-      content="Rajan Kumar Yadav - Data Scientist / ML&AI Engineer Portfolio"
+      content="Rajan Kumar Yadav | ML Engineer | Data Scientist"
     />
+    <meta http-equiv="content-language" content="en" />
     <meta
       property="og:description"
       content="Rajan Kumar Yadav - Full Stack Developer portfolio showcasing projects in Python, JavaScript, React, and Flask."
@@ -41,7 +46,7 @@
     <meta property="twitter:url" content="{{ request.url_root }}" />
     <meta
       property="twitter:title"
-      content="Rajan Kumar Yadav - Full Stack Developer Portfolio"
+      content="Rajan Kumar Yadav - ML Engineer | Data Scientist | Portfolio"
     />
     <meta
       property="twitter:description"
@@ -57,26 +62,40 @@
 
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Rajan Kumar Yadav",
-  "url": "https://rajan-kumar-yadav.vercel.app/",
-  "image": "{{ url_for('static', filename='img/logo.jpg', _external=True) }}",
-  "jobTitle": "Python Developer",
-  "description": "Python Developer, Flask Developer, Data Science student, and MLOps enthusiast. Building modern web applications, machine learning projects, and sharing technical blogs.",
-  "sameAs": [
-    "{{ profile.github }}",
-    "{{ profile.linkedin if profile.linkedin else '' }}"
-  ]
-}
-</script>
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Rajan Kumar Yadav",
+        "url": "https://rajan-kumar-yadav.vercel.app/",
+        "jobTitle": "AI Engineer",
+        "image": "https://rajan-kumar-yadav.vercel.app/static/img/logo.jpg",
+        "description": "AI Engineer, Data Scientist, Python Developer, Flask Developer and MLOps enthusiast.",
+        "knowsAbout": [
+          "Artificial Intelligence",
+          "Machine Learning",
+          "Deep Learning",
+          "Data Science",
+          "MLOps",
+          "Flask",
+          "Python",
+          "Docker",
+          "Django"
+        ],
+        "sameAs": ["{{ profile.github }}", "{{ profile.linkedin }}"]
+      }
+    </script>
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <link rel="preconnect" href="https://unpkg.com" />
 
     <script>
       tailwind = { config: { darkMode: "class" } };
     </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/site.css') }}"
