@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from email.message import EmailMessage
 
-from flask import Flask, abort, current_app, flash, redirect, render_template, request, send_file, send_from_directory, session, url_for, jsonify
+from flask import Flask, abort, current_app, flash, redirect, render_template, request, send_file, send_from_directory, session, url_for, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect, or_, text
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -694,7 +694,7 @@ def check_like(slug):
     else:
         liked_slugs = session.get("liked_articles", [])
         is_liked = slug in liked_slugs
-    return jsonify({"is_liked": is_liked})
+    return jsonify, Response({"is_liked": is_liked})
 
 
 @app.route("/article/<slug>/like", methods=["POST"])
@@ -710,7 +710,7 @@ def like_article(slug):
             post.likes = max(0, (post.likes or 0) - 1)
             db.session.commit()
             if is_ajax:
-                return jsonify({"status": "unliked", "likes": post.likes})
+                return jsonify, Response({"status": "unliked", "likes": post.likes})
             flash("Your like has been removed.", "info")
             return redirect(url_for("article", slug=slug, skip_views=1))
         like = ArticleLike(article_id=post.id, user_id=current_user.id)
@@ -724,7 +724,7 @@ def like_article(slug):
             post.likes = max(0, (post.likes or 0) - 1)
             db.session.commit()
             if is_ajax:
-                return jsonify({"status": "unliked", "likes": post.likes})
+                return jsonify, Response({"status": "unliked", "likes": post.likes})
             flash("Your like has been removed.", "info")
             return redirect(url_for("article", slug=slug, skip_views=1))
         liked_slugs.append(slug)
@@ -733,7 +733,7 @@ def like_article(slug):
     post.likes = (post.likes or 0) + 1
     db.session.commit()
     if is_ajax:
-        return jsonify({"status": "liked", "likes": post.likes})
+        return jsonify, Response({"status": "liked", "likes": post.likes})
     flash("Thanks for liking this article.", "success")
     # Redirect back to the article without incrementing views
     return redirect(url_for("article", slug=slug, skip_views=1))
@@ -1460,6 +1460,17 @@ def admin_redirect():
         return redirect(url_for("dashboard"))
     return redirect(url_for("login"))
 
+
+
+
+@app.route("/robots.txt")
+def robots():
+    return Response("""User-agent: *\nAllow: /\n\nSitemap: https://rajan-kumar-yadav.vercel.app/sitemap.xml\n""", mimetype="text/plain")
+
+@app.route("/sitemap.xml")
+def sitemap():
+    xml="""<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://rajan-kumar-yadav.vercel.app/</loc></url><url><loc>https://rajan-kumar-yadav.vercel.app/about</loc></url><url><loc>https://rajan-kumar-yadav.vercel.app/projects</loc></url><url><loc>https://rajan-kumar-yadav.vercel.app/blog</loc></url><url><loc>https://rajan-kumar-yadav.vercel.app/contact</loc></url></urlset>"""
+    return Response(xml,mimetype="application/xml")
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
