@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yourdomain.com/sitemap.xml
-
-# Crawl-delay: 2
+Sitemap: https://rajan-kumar-yadav.vercel.app/sitemap.xml
